@@ -39,7 +39,7 @@
 
 
 
-    <link rel="shortcut icon" href="/favicon.png">
+    <link rel="shortcut icon" href="/img/favicon.jpeg">
 
 
 
@@ -96,7 +96,8 @@
 
 
 
-<meta name="generator" content="Hexo 5.3.0"></head>
+<meta name="generator" content="Hexo 5.3.0"><link rel="stylesheet" href="/css/prism-a11y-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
 <body>
   <div id="container">
     <div class="left-col">
@@ -313,107 +314,107 @@
 <p>这样我们就能写出标准的自适应控制方程<a href="#ref-anchor"><sup>[2]</sup></a><br>$$u_{f_n} = \hat{a}\ddot{h}_r - ks + \hat{b}\dot{h} + \hat{c}g \tag{6}$$</p>
 <p>该控制方程共由以下几部分组成：反馈加速度项$\hat{a}\ddot{h}_r$、跟踪误差项$ks$、速度误差项$\hat{b}\dot{h}$以及重力补偿项$\hat{c}g$。其中参考加速度$\ddot{h}_r = \ddot{h}_d - \lambda\dot{\tilde{h}}$，$k$是一个正的跟踪控制激励，$\hat{a}, \hat{b}, \hat{c}$分别为$a, b, c$的适应性估计值，根据下式进行调整：<br>$$\begin{array}{c}<br>\dot{\hat{a}} &amp;=&amp; -\alpha_a s\ddot{h}_r  \<br>\dot{\hat{b}} &amp;=&amp; -\alpha_b s\dot{h}     \<br>\dot{\hat{c}} &amp;=&amp; -\alpha_c sg \tag{7}<br>\end{array}$$<br>其中$\alpha_a, \alpha_b, \alpha_c$均为正的适应激励。值得注意的是式$(7)$给出的实时估计值并不能保证对应的参数收敛到真值，除非满足持续激励条件（persistent excitation conditions)。但这并不是我们考虑的问题，因为我们项目只需要保证工具的运动，而不是摩擦参数的估计值的准确性。这个控制方案也的确保证了跟踪误差$s$的收敛性，说明我们工具能准确运动到指定位置。</p>
 <h2 id="验证控制模型"><a href="#验证控制模型" class="headerlink" title="验证控制模型"></a>验证控制模型</h2><p>由于我们的模型相对简单，只有一个自由度，外力只需要考虑垂直方向上的重力和摩擦力，所以可以很容易的通过编程来模拟运动过程，以此验证控制算法的准确性。同样用Matlab编程，程序如下：</p>
-<pre><code class="matlab">% 基于Matlab的二指夹具在手操作仿真
-% --- 符号规定 ---
-% t: 时间序列, tt: 时间间隔, h: 实际位置, hd: 目标位置, 
-% hv: 位置误差, dhv: 速度误差, s: 跟踪误差,
-% miu: 库伦摩擦系数, sigma: 黏滞摩擦系数, g: 重力加速度, 
-% fn: 正压力, f:总摩擦力,
-% lamb: 控制常量, k: 跟踪控制激励, 
-% alpha_a, alpha_b, alpha_c: 控制方程调参系数,
-% ae, be, ce: 控制方程系数的估计值,
-clear;  clc;
+<pre class="line-numbers language-matlab"><code class="language-matlab"><span class="token comment" spellcheck="true">% 基于Matlab的二指夹具在手操作仿真</span>
+<span class="token comment" spellcheck="true">% --- 符号规定 ---</span>
+<span class="token comment" spellcheck="true">% t: 时间序列, tt: 时间间隔, h: 实际位置, hd: 目标位置, </span>
+<span class="token comment" spellcheck="true">% hv: 位置误差, dhv: 速度误差, s: 跟踪误差,</span>
+<span class="token comment" spellcheck="true">% miu: 库伦摩擦系数, sigma: 黏滞摩擦系数, g: 重力加速度, </span>
+<span class="token comment" spellcheck="true">% fn: 正压力, f:总摩擦力,</span>
+<span class="token comment" spellcheck="true">% lamb: 控制常量, k: 跟踪控制激励, </span>
+<span class="token comment" spellcheck="true">% alpha_a, alpha_b, alpha_c: 控制方程调参系数,</span>
+<span class="token comment" spellcheck="true">% ae, be, ce: 控制方程系数的估计值,</span>
+clear<span class="token punctuation">;</span>  clc<span class="token punctuation">;</span>
 
-% --- 控制参数调整
-lamb = 1;
-k = 10;
-alpha_a = 4;
-alpha_b = 4;
-alpha_c = 4;
-ae(1) = 0;
-be(1) = 0;
-ce(1) = 0;
+<span class="token comment" spellcheck="true">% --- 控制参数调整</span>
+lamb <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+k <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">;</span>
+alpha_a <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
+alpha_b <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
+alpha_c <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
+<span class="token function">ae</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token function">be</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token function">ce</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
 
-% --- 模型常量估计值
-g = 9.8;
-miu = 0.5;
-sigma = 0.5;
-m = 1;
+<span class="token comment" spellcheck="true">% --- 模型常量估计值</span>
+g <span class="token operator">=</span> <span class="token number">9.8</span><span class="token punctuation">;</span>
+miu <span class="token operator">=</span> <span class="token number">0.5</span><span class="token punctuation">;</span>
+sigma <span class="token operator">=</span> <span class="token number">0.5</span><span class="token punctuation">;</span>
+m <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
 
-% --- 系统初值及参考模型
-tt = 0.01;
-t = 0: tt: 10;
-N = length(t);
-h0 = 0;
-hd = -1*ones(N,1);
+<span class="token comment" spellcheck="true">% --- 系统初值及参考模型</span>
+tt <span class="token operator">=</span> <span class="token number">0.01</span><span class="token punctuation">;</span>
+t <span class="token operator">=</span> <span class="token number">0</span><span class="token operator">:</span> tt<span class="token operator">:</span> <span class="token number">10</span><span class="token punctuation">;</span>
+N <span class="token operator">=</span> <span class="token function">length</span><span class="token punctuation">(</span>t<span class="token punctuation">)</span><span class="token punctuation">;</span>
+h0 <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+hd <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token operator">*</span><span class="token function">ones</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-% --- 循环变量初始化
-h = zeros(N,1);
-dh = zeros(N,1);
-ddh = zeros(N,1);
+<span class="token comment" spellcheck="true">% --- 循环变量初始化</span>
+h <span class="token operator">=</span> <span class="token function">zeros</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+dh <span class="token operator">=</span> <span class="token function">zeros</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ddh <span class="token operator">=</span> <span class="token function">zeros</span><span class="token punctuation">(</span>N<span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-% For begining
-h(1) = h0;
-dh(1) = 0;
-ddh(1) = 0;
-dhv(1) = 0;
+<span class="token comment" spellcheck="true">% For begining</span>
+<span class="token function">h</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">=</span> h0<span class="token punctuation">;</span>
+<span class="token function">dh</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token function">ddh</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token function">dhv</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
 
-% Loop begin
-for i = 2:N
-    h(i) =  h(i-1) + dh(i-1)*tt + 1/2*ddh(i-1)*tt*tt;
-    if (h(i)&gt;h(i-1))
-        h(i) = h(i-1);
-    end
+<span class="token comment" spellcheck="true">% Loop begin</span>
+<span class="token keyword">for</span> <span class="token number">i</span> <span class="token operator">=</span> <span class="token number">2</span><span class="token operator">:</span>N
+    <span class="token function">h</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span>  <span class="token function">h</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">dh</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token operator">*</span>tt <span class="token operator">+</span> <span class="token number">1</span><span class="token operator">/</span><span class="token number">2</span><span class="token operator">*</span><span class="token function">ddh</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token operator">*</span>tt<span class="token operator">*</span>tt<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">h</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token operator">></span><span class="token function">h</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token function">h</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token function">h</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">end</span>
 
-    dh(i) = (h(i) - h(i-1))/tt;
-    dhd(i) = (hd(i) - hd(i-1))/tt;
-    ddhd(i) = (dhd(i) - dhd(i-1))/tt;
-    hr(i) = ddhd(i) - lamb*dhv;
-    hv = h(i) - hd(i);
-    dhv = dh(i) - dhd(i);
-    s(i) = dhv + lamb*hv;
+    <span class="token function">dh</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token function">h</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token function">h</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">/</span>tt<span class="token punctuation">;</span>
+    <span class="token function">dhd</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token function">hd</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token function">hd</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">/</span>tt<span class="token punctuation">;</span>
+    <span class="token function">ddhd</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token function">dhd</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token function">dhd</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">/</span>tt<span class="token punctuation">;</span>
+    <span class="token function">hr</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token function">ddhd</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">-</span> lamb<span class="token operator">*</span>dhv<span class="token punctuation">;</span>
+    hv <span class="token operator">=</span> <span class="token function">h</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token function">hd</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    dhv <span class="token operator">=</span> <span class="token function">dh</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token function">dhd</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">s</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> dhv <span class="token operator">+</span> lamb<span class="token operator">*</span>hv<span class="token punctuation">;</span>
 
-    ae(i) = ae(i-1) - alpha_a*s(i)*hr(i);
-    be(i) = be(i-1) - alpha_b*s(i)*dh(i);
-    ce(i) = ce(i-1) - alpha_c*s(i)*g;
+    <span class="token function">ae</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token function">ae</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">-</span> alpha_a<span class="token operator">*</span><span class="token function">s</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token operator">*</span><span class="token function">hr</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">be</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token function">be</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">-</span> alpha_b<span class="token operator">*</span><span class="token function">s</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token operator">*</span><span class="token function">dh</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ce</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token function">ce</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">-</span> alpha_c<span class="token operator">*</span><span class="token function">s</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token operator">*</span>g<span class="token punctuation">;</span>
 
-    ufn(i) = ae(i)*hr(i) - k*s(i) + be(i)*dh(i) + ce(i)*g;
-    fn(i) = ufn(i);
-    if (fn(i) &lt; 0)
-        fn(i) = 0;
-        f(i) = 0;
-    else
-        f(i) = miu*fn(i) - sigma*dh(i);
-    end
-    ddh(i) =  f(i)/m - g;
-end
+    <span class="token function">ufn</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token function">ae</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token operator">*</span><span class="token function">hr</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">-</span> k<span class="token operator">*</span><span class="token function">s</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">be</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token operator">*</span><span class="token function">dh</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token function">ce</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token operator">*</span>g<span class="token punctuation">;</span>
+    <span class="token function">fn</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token function">ufn</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">fn</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token function">fn</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token function">f</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">else</span>
+        <span class="token function">f</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span> miu<span class="token operator">*</span><span class="token function">fn</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">-</span> sigma<span class="token operator">*</span><span class="token function">dh</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">end</span>
+    <span class="token function">ddh</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span> <span class="token operator">=</span>  <span class="token function">f</span><span class="token punctuation">(</span><span class="token number">i</span><span class="token punctuation">)</span><span class="token operator">/</span>m <span class="token operator">-</span> g<span class="token punctuation">;</span>
+<span class="token keyword">end</span>
 
-% 绘图
-subplot(2,2,1)
-plot(t, hd, &#39;:&#39;);
-hold on;
-plot(t, h);
-set(gca,&#39;YLim&#39;,[1.1*min(h), 0]);
-title(&#39;运动路径&#39;);
-xlabel(&#39;t/s&#39;);
-ylabel(&#39;h/m&#39;);
-legend(&#39;Ref&#39;, &#39;Real&#39;);
+<span class="token comment" spellcheck="true">% 绘图</span>
+<span class="token function">subplot</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span>
+<span class="token function">plot</span><span class="token punctuation">(</span>t<span class="token punctuation">,</span> hd<span class="token punctuation">,</span> <span class="token string">':'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+hold on<span class="token punctuation">;</span>
+<span class="token function">plot</span><span class="token punctuation">(</span>t<span class="token punctuation">,</span> h<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">set</span><span class="token punctuation">(</span>gca<span class="token punctuation">,</span><span class="token string">'YLim'</span><span class="token punctuation">,</span><span class="token punctuation">[</span><span class="token number">1.1</span><span class="token operator">*</span><span class="token function">min</span><span class="token punctuation">(</span>h<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">title</span><span class="token punctuation">(</span><span class="token string">'运动路径'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">xlabel</span><span class="token punctuation">(</span><span class="token string">'t/s'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">ylabel</span><span class="token punctuation">(</span><span class="token string">'h/m'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">legend</span><span class="token punctuation">(</span><span class="token string">'Ref'</span><span class="token punctuation">,</span> <span class="token string">'Real'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-subplot(2,2,2)
-plot(t,fn);
-hold on;
-plot(t, f);
-title(&#39;加持力&amp;摩擦力&#39;);
-xlabel(&#39;t/s&#39;);
-ylabel(&#39;f/N&#39;);
-legend(&#39;f_n&#39;,&#39;f&#39;);
+<span class="token function">subplot</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">)</span>
+<span class="token function">plot</span><span class="token punctuation">(</span>t<span class="token punctuation">,</span>fn<span class="token punctuation">)</span><span class="token punctuation">;</span>
+hold on<span class="token punctuation">;</span>
+<span class="token function">plot</span><span class="token punctuation">(</span>t<span class="token punctuation">,</span> f<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">title</span><span class="token punctuation">(</span><span class="token string">'加持力&amp;摩擦力'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">xlabel</span><span class="token punctuation">(</span><span class="token string">'t/s'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">ylabel</span><span class="token punctuation">(</span><span class="token string">'f/N'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">legend</span><span class="token punctuation">(</span><span class="token string">'f_n'</span><span class="token punctuation">,</span><span class="token string">'f'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-subplot(2,2,3)
-plot(t, dh)
-title(&#39;运动速度&#39;)
-xlabel(&#39;t/s&#39;);
-ylabel(&#39;v/m\cdots^&#123;-1&#125;&#39;);
-</code></pre>
+<span class="token function">subplot</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">)</span>
+<span class="token function">plot</span><span class="token punctuation">(</span>t<span class="token punctuation">,</span> dh<span class="token punctuation">)</span>
+<span class="token function">title</span><span class="token punctuation">(</span><span class="token string">'运动速度'</span><span class="token punctuation">)</span>
+<span class="token function">xlabel</span><span class="token punctuation">(</span><span class="token string">'t/s'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">ylabel</span><span class="token punctuation">(</span><span class="token string">'v/m\cdots^&amp;#123;-1&amp;#125;'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 <p>运行程序，观察生成的图像(如下图所示)，基本符合实际运动规律，可以认为控制模型合理。<br><img src="http://q789z4z6g.bkt.clouddn.com/sim2.svg?center" alt="程序模拟的运动曲线"></p>
 <h2 id="相关链接"><a href="#相关链接" class="headerlink" title="相关链接"></a>相关链接</h2><div id="ref-anchor"></div>
 

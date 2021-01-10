@@ -36,7 +36,7 @@
 
 
 
-    <link rel="shortcut icon" href="/favicon.png">
+    <link rel="shortcut icon" href="/img/favicon.jpeg">
 
 
 
@@ -93,7 +93,8 @@
 
 
 
-<meta name="generator" content="Hexo 5.3.0"></head>
+<meta name="generator" content="Hexo 5.3.0"><link rel="stylesheet" href="/css/prism-a11y-dark.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
 <body>
   <div id="container">
     <div class="left-col">
@@ -311,18 +312,18 @@
 </ul>
 <h2 id="分离themes仓库"><a href="#分离themes仓库" class="headerlink" title="分离themes仓库"></a>分离themes仓库</h2><p>分离仓库有两种方法：简单的是使用<code>git subtree</code>，麻烦点的是使用<code>git filter-branch</code>。</p>
 <h3 id="Git-subtree"><a href="#Git-subtree" class="headerlink" title="Git subtree"></a>Git subtree</h3><p>自从 1.8 版本之后 git 就添加了 subtree 子命令，使用这个新命令我们可以很简单高效地解决这个问题。首先进入<code>&lt;pre-repo&gt;</code>，运行：</p>
-<pre><code class="git">git subtree split -P &lt;folder&gt; -b &lt;temp-branch&gt;</code></pre>
+<pre class="line-numbers language-git"><code class="language-git">git subtree split -P &lt;folder> -b &lt;temp-branch><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>其中<code>&lt;temp-branch&gt;</code>是一个临时分支。运行后，git会遍历原仓库中所有的历史提交，筛选出与指定路径有关的commit并存入<code>&lt;temp-branch&gt;</code>。然后就简单了，只需要在别的文件夹pull这个临时分支，就能将子仓库clone过去。运行：</p>
-<pre><code class="shell-session">mkdir &lt;new-repo&gt;
-cd &lt;new-repo&gt;
+<pre class="line-numbers language-shell-session"><code class="language-shell-session">mkdir <new-repo>
+cd <new-repo>
 git init
-git pull &lt;pre-repo&gt; &lt;temp-branch&gt;</code></pre>
+git pull <pre-repo> <temp-branch><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 <h3 id="Git-filter-branch"><a href="#Git-filter-branch" class="headerlink" title="Git filter-branch"></a>Git filter-branch</h3><p>这是一个git传统的核弹级大杀器，慎用。首先，clone一份原仓库并删掉其remote：</p>
-<pre><code class="git">git clone &lt;pre-repo&gt; &lt;new-repo&gt;
-cd &lt;newo-repo&gt;
-git remote rm origin</code></pre>
+<pre class="line-numbers language-git"><code class="language-git">git clone &lt;pre-repo> &lt;new-repo>
+cd &lt;newo-repo>
+git remote rm origin<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
 <p>然后运行如下命令，遍历所有历史提交，只保留对指定子目录有影响的提交，并将该子目录设为仓库的根目录：</p>
-<pre><code class="git">git filter-branch --tag-name-filter cat --prune-empty --subdirectory-filter &lt;folder&gt; -- --all</code></pre>
+<pre class="line-numbers language-git"><code class="language-git">git filter-branch --tag-name-filter cat --prune-empty --subdirectory-filter &lt;folder> -- --all<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>其中各参数的作用为：</p>
 <ul>
 <li><code>--tag-name-filter</code>: 控制如何处理旧的tag，cat表示原样输出；</li>
@@ -331,13 +332,13 @@ git remote rm origin</code></pre>
 <li><code>-- -- all</code>: 对所有分支进行操作，当然如果你只想保留当前分支，也可以不加此参数。</li>
 </ul>
 <p>该命令执行完成后，可以看到新仓库中已经变成原来子仓库的内容，也只保留了相关的提交历史。不过这时新仓库中的<code>.git</code>目录中还是保留了不少无用的object，我们需要将其清除以减小新仓库的体积（方法一则不需要执行这一步）。运行如下命令：</p>
-<pre><code class="git">git reset --hard
-git for-each-ref --format=&quot;%(refname)&quot; refs/original/ | xargs -n 1 git update-ref -d
+<pre class="line-numbers language-git"><code class="language-git">git reset --hard
+git for-each-ref --format=<span class="token string">"%(refname)"</span> refs/original/ | xargs -n 1 git update-ref -d
 git reflog expire --expire=now --all
-git gc --aggressive --prune=now</code></pre>
+git gc --aggressive --prune=now<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 <h3 id="关联原仓库与新仓库"><a href="#关联原仓库与新仓库" class="headerlink" title="关联原仓库与新仓库"></a>关联原仓库与新仓库</h3><p>这一步是可选的。一般来说，在我们把原目录中的子文件夹分离成独立的 git 仓库后，总会希望再通过某种方法在原仓库中引用新仓库的代码。这里我们可以通过<code>subtree</code>或<code>submodule</code>两种方法来实现，不过各有优缺点，可以视情况选择，不过现在一般都推荐使用subtree。当然，你也可以分离之后直接使用 npm、composer 之类的包管理器将新仓库作为一个依赖库引入进来，这也是完全没有问题的。</p>
 <h2 id="清理旧仓库"><a href="#清理旧仓库" class="headerlink" title="清理旧仓库"></a>清理旧仓库</h2><p>既然将子目录分离成了新仓库，那么或许你还想要将子目录从原仓库的<code>.git</code>中删除。在原仓库路径下运行如下命令：</p>
-<pre><code class="git">git filter-branch --force --prune-empty --index-filter &#39;git rm -rf --cached --ignore-unmatch &lt;folder&gt;&#39; --tag-name-filter cat -- --all</code></pre>
+<pre class="line-numbers language-git"><code class="language-git">git filter-branch --force --prune-empty --index-filter <span class="token string">'git rm -rf --cached --ignore-unmatch &lt;folder>'</span> --tag-name-filter cat -- --all<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <p>其中各参数的作用为：</p>
 <ul>
 <li><code>--force</code>: 让git即使遇到冲突也强制执行；</li>
@@ -345,7 +346,7 @@ git gc --aggressive --prune=now</code></pre>
 <li><code>git rm -rf --cached --ignore-unmatch &lt;folder&gt;</code>: 让git删除匹配到的缓存文件。</li>
 </ul>
 <p>执行完成后，本地仓库已经删除了子目录及其相关的提交历史。最后提交到远程即可：</p>
-<pre><code class="git">git push --force --all</code></pre>
+<pre class="line-numbers language-git"><code class="language-git">git push --force --all<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 <h2 id="相关链接"><a href="#相关链接" class="headerlink" title="相关链接"></a>相关链接</h2><ol>
 <li><a target="_blank" rel="noopener" href="http://varyu.com/notes/527.html">如何将现有 git 仓库中的子目录分离为独立仓库并保留其提交历史 <strong>By</strong> 瑜小瑜</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/780161d32c8e">彻底删除git中没用的大文件 <strong>By</strong> Phelthas</a></li>
